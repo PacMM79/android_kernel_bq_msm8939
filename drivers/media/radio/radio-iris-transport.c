@@ -38,18 +38,18 @@ struct radio_data {
 	struct smd_channel  *fm_channel;
 };
 struct radio_data hs;
-DEFINE_MUTEX(fm_smd_enable);
+static DEFINE_MUTEX(fm_smd_enable);
 static int fmsmd_set;
 static bool chan_opened;
 static int hcismd_fm_set_enable(const char *val, struct kernel_param *kp);
 module_param_call(fmsmd_set, hcismd_fm_set_enable, NULL, &fmsmd_set, 0644);
 static struct work_struct *reset_worker;
-static void radio_hci_smd_deregister(void);
-static void radio_hci_smd_exit(void);
+static int radio_hci_smd_deregister(void);
+static int radio_hci_smd_exit(void);
 
 static void radio_hci_smd_destruct(struct radio_hci_dev *hdev)
 {
-	radio_hci_unregister_dev();
+	radio_hci_smd_exit();
 }
 
 
@@ -174,7 +174,6 @@ static int radio_hci_smd_register_dev(struct radio_data *hsmd)
 		(unsigned long) hsmd);
 	hdev->send  = radio_hci_smd_send_frame;
 	hdev->destruct = radio_hci_smd_destruct;
-	hdev->close_smd = radio_hci_smd_exit;
 
 	/* Open the SMD Channel and device and register the callback function */
 	rc = smd_named_open_on_edge("APPS_FM", SMD_APPS_WCNSS,
@@ -192,6 +191,7 @@ static int radio_hci_smd_register_dev(struct radio_data *hsmd)
 	if (radio_hci_register_dev(hdev) < 0) {
 		FMDERR("Can't register HCI device");
 		smd_close(hsmd->fm_channel);
+		hsmd->fm_channel = 0;
 		hsmd->hdev = NULL;
 		kfree(hdev);
 		return -ENODEV;
@@ -201,15 +201,23 @@ static int radio_hci_smd_register_dev(struct radio_data *hsmd)
 	return 0;
 }
 
-static void radio_hci_smd_deregister(void)
+static int radio_hci_smd_deregister(void)
 {
-	radio_hci_unregister_dev();
+	int ret = 0;
+
+	if ((ret = radio_hci_unregister_dev()) == -EBUSY) {
+		fmsmd_set = 1;
+		goto done;
+	}
 	kfree(hs.hdev);
 	hs.hdev = NULL;
 
 	smd_close(hs.fm_channel);
 	hs.fm_channel = 0;
 	fmsmd_set = 0;
+
+done:
+	return ret;
 }
 
 static int radio_hci_smd_init(void)
@@ -225,23 +233,32 @@ static int radio_hci_smd_init(void)
 	ret = radio_hci_smd_register_dev(&hs);
 	if (ret < 0) {
 		FMDERR("Failed to register smd device");
+		fmsmd_set = 0;
 		chan_opened = false;
 		return ret;
 	}
+	fmsmd_set = 1;
 	chan_opened = true;
 	return ret;
 }
 
-static void radio_hci_smd_exit(void)
+static int radio_hci_smd_exit(void)
 {
+	int ret = 0;
+
 	if (!chan_opened) {
 		FMDBG("Channel already closed");
-		return;
+		return 0;
 	}
 
 	/* this should be called with fm_smd_enable lock held */
-	radio_hci_smd_deregister();
+	if ((ret = radio_hci_smd_deregister())) {
+		FMDERR("Failed to deregister smd %d", ret);
+		return ret;
+	}
 	chan_opened = false;
+
+	return ret;
 }
 
 static int hcismd_fm_set_enable(const char *val, struct kernel_param *kp)
@@ -254,13 +271,13 @@ static int hcismd_fm_set_enable(const char *val, struct kernel_param *kp)
 	switch (fmsmd_set) {
 
 	case 1:
-		radio_hci_smd_init();
+		ret = radio_hci_smd_init();
 		break;
 	case 0:
-		radio_hci_smd_exit();
+		ret = radio_hci_smd_exit();
 		break;
 	default:
-		ret = -EFAULT;
+		ret = -EINVAL;
 	}
 done:
 	mutex_unlock(&fm_smd_enable);

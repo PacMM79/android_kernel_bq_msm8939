@@ -62,7 +62,6 @@ static void radio_hci_cmd_task(unsigned long arg);
 static void radio_hci_rx_task(unsigned long arg);
 static struct video_device *video_get_dev(void);
 static DEFINE_RWLOCK(hci_task_lock);
-extern struct mutex fm_smd_enable;
 
 typedef int (*radio_hci_request_func)(struct radio_hci_dev *hdev,
 		int (*req)(struct
@@ -627,6 +626,12 @@ int radio_hci_unregister_dev(void)
 		FMDERR("radio/hdev is null");
 		return -EINVAL;
 	}
+
+	if (radio->mode != FM_OFF) {
+		FMDERR(":radio is running");
+		return -EBUSY;
+	}
+
 	hdev = radio->fm_hdev;
 
 	tasklet_kill(&hdev->rx_task);
@@ -5221,10 +5226,6 @@ static int iris_fops_release(struct file *file)
 		return retval;
 	}
 END:
-	mutex_lock(&fm_smd_enable);
-	if (radio->fm_hdev != NULL)
-		radio->fm_hdev->close_smd();
-	mutex_unlock(&fm_smd_enable);
 
 	if (retval < 0)
 		FMDERR("Err on disable FM %d\n", retval);
@@ -5403,6 +5404,16 @@ static int is_enable_rx_possible(struct iris_device *radio)
 static int is_enable_tx_possible(struct iris_device *radio)
 {
 	int retval = 1;
+
+	if (unlikely(radio == NULL)) {
+		FMDERR(":radio is null");
+		return -EINVAL;
+	}
+
+	if (radio->fm_hdev == NULL) {
+		FMDERR(":radio->fm_hdev is null (smd channel is not open)");
+		return -EINVAL;
+	}
 
 	if (radio->mode == FM_OFF || radio->mode == FM_TRANS)
 		retval = 0;
