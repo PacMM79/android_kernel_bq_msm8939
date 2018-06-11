@@ -2505,6 +2505,7 @@ CONFIG_BACKLIGHT_CLASS_DEVICE=y
 # CONFIG_BACKLIGHT_LM3639 is not set
 # CONFIG_BACKLIGHT_LP855X is not set
 # CONFIG_ADF is not set
+CONFIG_FB_MSM_MDSS_KCAL_CTRL=y
 
 #
 # Console display driver support
