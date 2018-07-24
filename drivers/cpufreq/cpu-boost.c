@@ -51,7 +51,6 @@ module_param(boost_ms, uint, 0644);
 static unsigned int sync_threshold;
 module_param(sync_threshold, uint, 0644);
 
-#ifndef CONFIG_CPU_BOOST_DISABLE_INPUTBOOST
 static bool input_boost_enabled;
 
 static unsigned int input_boost_ms = 40;
@@ -373,26 +372,19 @@ static void do_input_boost(struct work_struct *work)
 	if (sched_boost_on_input) {
 		ret = sched_set_boost(1);
 		if (ret)
-			continue;
-		if (policy.cur >= i_sync_info->input_boost_freq)
-			continue;
-
-		cancel_delayed_work_sync(&i_sync_info->input_boost_rem);
-		i_sync_info->input_boost_min = i_sync_info->input_boost_freq;
-		cpufreq_update_policy(i);
-		queue_delayed_work_on(i_sync_info->cpu, cpu_boost_wq,
-			&i_sync_info->input_boost_rem,
-			msecs_to_jiffies(input_boost_ms));
+			pr_err("cpu-boost: HMP boost enable failed\n");
+		else
+			sched_boost_active = true;
 	}
-	put_online_cpus();
+
+	queue_delayed_work(cpu_boost_wq, &input_boost_rem,
+					msecs_to_jiffies(input_boost_ms));
 }
 
 static void cpuboost_input_event(struct input_handle *handle,
 		unsigned int type, unsigned int code, int value)
 {
 	u64 now;
-
-	if (!cpuboost_enable) return;
 
 	if (!input_boost_enabled)
 		return;
