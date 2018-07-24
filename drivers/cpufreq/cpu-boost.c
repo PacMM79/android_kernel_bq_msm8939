@@ -51,6 +51,7 @@ module_param(boost_ms, uint, 0644);
 static unsigned int sync_threshold;
 module_param(sync_threshold, uint, 0644);
 
+#ifndef CONFIG_CPU_BOOST_DISABLE_INPUTBOOST
 static bool input_boost_enabled;
 
 static unsigned int input_boost_ms = 40;
@@ -61,6 +62,11 @@ module_param(migration_load_threshold, uint, 0644);
 
 static bool load_based_syncs;
 module_param(load_based_syncs, bool, 0644);
+
+static bool sched_boost_on_input;
+module_param(sched_boost_on_input, bool, 0644);
+
+static bool sched_boost_active;
 
 static struct delayed_work input_boost_rem;
 static u64 last_input_time;
@@ -156,10 +162,10 @@ static int boost_adjust_notify(struct notifier_block *nb, unsigned long val,
 
 	switch (val) {
 	case CPUFREQ_ADJUST:
-        if (!b_min && !ib_min)
-			 break;
+		if (!b_min && !ib_min)
+			break;
 
-        min = max(b_min, ib_min);
+		min = max(b_min, ib_min);
 
 		pr_debug("CPU%u policy min before boost: %u kHz\n",
 			 cpu, policy->min);
@@ -209,7 +215,7 @@ static void update_policy_online(void)
 
 static void do_input_boost_rem(struct work_struct *work)
 {
-	unsigned int i;
+	unsigned int i, ret;
 	struct cpu_sync *i_sync_info;
 
 	/* Reset the input_boost_min for all CPUs in the system */
@@ -221,6 +227,13 @@ static void do_input_boost_rem(struct work_struct *work)
 
 	/* Update policies for all online CPUs */
 	update_policy_online();
+
+	if (sched_boost_active) {
+		ret = sched_set_boost(0);
+		if (ret)
+			pr_err("cpu-boost: HMP boost disable failed\n");
+		sched_boost_active = false;
+	}
 }
 
 static int boost_mig_sync_thread(void *data)
@@ -337,14 +350,16 @@ static struct notifier_block boost_migration_nb = {
 
 static void do_input_boost(struct work_struct *work)
 {
-	unsigned int i;
+	unsigned int i, ret;
 	struct cpu_sync *i_sync_info;
 
-	if (!cpuboost_enable) return;
+	cancel_delayed_work_sync(&input_boost_rem);
+	if (sched_boost_active) {
+		sched_set_boost(0);
+		sched_boost_active = false;
+	}
 
-		cancel_delayed_work_sync(&input_boost_rem);
-
-		/* Set the input_boost_min for all CPUs in the system */
+	/* Set the input_boost_min for all CPUs in the system */
 	pr_debug("Setting input boost min for all CPUs\n");
 	for_each_possible_cpu(i) {
 		i_sync_info = &per_cpu(sync_info, i);
@@ -354,8 +369,22 @@ static void do_input_boost(struct work_struct *work)
 	/* Update policies for all online CPUs */
 	update_policy_online();
 
-	queue_delayed_work(cpu_boost_wq, &input_boost_rem,
-					msecs_to_jiffies(input_boost_ms));
+	/* Enable scheduler boost to migrate tasks to big cluster */
+	if (sched_boost_on_input) {
+		ret = sched_set_boost(1);
+		if (ret)
+			continue;
+		if (policy.cur >= i_sync_info->input_boost_freq)
+			continue;
+
+		cancel_delayed_work_sync(&i_sync_info->input_boost_rem);
+		i_sync_info->input_boost_min = i_sync_info->input_boost_freq;
+		cpufreq_update_policy(i);
+		queue_delayed_work_on(i_sync_info->cpu, cpu_boost_wq,
+			&i_sync_info->input_boost_rem,
+			msecs_to_jiffies(input_boost_ms));
+	}
+	put_online_cpus();
 }
 
 static void cpuboost_input_event(struct input_handle *handle,
@@ -468,15 +497,15 @@ static int cpu_boost_init(void)
 		init_waitqueue_head(&s->sync_wq);
 		spin_lock_init(&s->lock);
 		INIT_DELAYED_WORK(&s->boost_rem, do_boost_rem);
-		s->thread = kthread_run(boost_mig_sync_thread, (void *)cpu,
-					"boost_sync/%d", cpu);
+		s->thread = kthread_run(boost_mig_sync_thread,
+				(void *) (long)cpu, "boost_sync/%d", cpu);
 		set_cpus_allowed(s->thread, *cpumask_of(cpu));
 	}
 	cpufreq_register_notifier(&boost_adjust_nb, CPUFREQ_POLICY_NOTIFIER);
 	atomic_notifier_chain_register(&migration_notifier_head,
 					&boost_migration_nb);
-
 	ret = input_register_handler(&cpuboost_input_handler);
+
 	return 0;
 }
 late_initcall(cpu_boost_init);
