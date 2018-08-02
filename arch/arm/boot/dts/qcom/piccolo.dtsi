@@ -337,6 +337,7 @@
 
 	sound {
 		qcom,msm-ext-pa = "quaternary";
+		qcom,msm-mclk-freq = <9600000>;
 		qcom,audio-routing =
 			"IN1AL",  "MICBIAS1",
 			"IN1AR",  "MICBIAS1",
