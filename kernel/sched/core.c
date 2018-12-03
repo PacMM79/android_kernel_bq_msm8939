@@ -7793,6 +7793,8 @@ struct sd_data {
 	struct sched_group_power **__percpu sgp;
 };
 
+int sched_smt_power_savings = 0, sched_mc_power_savings = 4;
+
 struct s_data {
 	struct sched_domain ** __percpu sd;
 	struct root_domain	*rd;
