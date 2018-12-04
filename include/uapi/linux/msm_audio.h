@@ -437,22 +437,6 @@ struct msm_hwacc_data_config {
 	__u32 sample_rate;
 	__u32 bits_per_sample;
 };
- struct msm_hwacc_buf_cfg {
-	__u32 input_len;
-	__u32 output_len;
-};
- struct msm_hwacc_buf_avail {
-	__u32 input_num_avail;
-	__u32 output_num_avail;
-};
- struct msm_hwacc_effects_config {
-	struct msm_hwacc_data_config input;
-	struct msm_hwacc_data_config output;
-	struct msm_hwacc_buf_cfg buf_cfg;
-	__u32 meta_mode_enabled;
-	__u32 overwrite_topology;
-	__s32 topology;
-};
 
 struct msm_hwacc_buf_cfg {
 	__u32 input_len;
