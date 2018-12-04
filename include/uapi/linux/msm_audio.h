@@ -420,5 +420,29 @@ struct msm_acdb_cmd_device {
 	uint32_t     *phys_buf;           /* Physical Address of data */
 };
 
+struct msm_hwacc_data_config {
+	__u32 buf_size;
+	__u32 num_buf;
+	__u32 num_channels;
+	__u8 channel_map[8];
+	__u32 sample_rate;
+	__u32 bits_per_sample;
+};
+ struct msm_hwacc_buf_cfg {
+	__u32 input_len;
+	__u32 output_len;
+};
+ struct msm_hwacc_buf_avail {
+	__u32 input_num_avail;
+	__u32 output_num_avail;
+};
+ struct msm_hwacc_effects_config {
+	struct msm_hwacc_data_config input;
+	struct msm_hwacc_data_config output;
+	struct msm_hwacc_buf_cfg buf_cfg;
+	__u32 meta_mode_enabled;
+	__u32 overwrite_topology;
+	__s32 topology;
+};
 
 #endif
