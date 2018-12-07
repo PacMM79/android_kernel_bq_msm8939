@@ -53,6 +53,10 @@
  * not need additional reference counting. The structure is protected by the
  * mutex 'mutex'.
  */
+
+static unsigned int log_enabled = 1;
+module_param(log_enabled, uint, S_IWUSR | S_IRUGO);
+
 struct logger_log {
 	unsigned char		*buffer;
 	struct miscdevice	misc;
@@ -477,6 +481,9 @@ static ssize_t logger_aio_write(struct kiocb *iocb, const struct iovec *iov,
 	struct logger_entry header;
 	struct timespec now;
 	ssize_t ret = 0;
+
+    	if (!log_enabled)
+        	return 0;
 
 	now = current_kernel_time();
 
