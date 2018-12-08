@@ -589,4 +589,7 @@ config MSM_HOTPLUG
 
 source "drivers/soc/qcom/memshare/Kconfig"
 
+config STATE_NOTIFIER
+        bool "State Notifier"
+
 endif # ARCH_MSM
