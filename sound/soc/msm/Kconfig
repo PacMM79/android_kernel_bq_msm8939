@@ -236,7 +236,6 @@ config SND_SOC_APQ8084
 	select DOLBY_DAP
 	select DTS_SRS_TM
 	select QTI_PP
-	select SND_SOC_CPE
 	select DOLBY_DS2
 	select SND_HWDEP
 	help
@@ -263,7 +262,6 @@ config SND_SOC_MSM8X16
 	select DOLBY_DS2
 	select MSM_QDSP6_APRV3
 	select MSM_QDSP6V2_CODECS
-	select SND_SOC_CPE
 	select SND_HWDEP
 	help
 	 To add support for SoC audio on MSM8X16.
@@ -288,7 +286,6 @@ config SND_SOC_MSM8909
 	select DOLBY_DAP
 	select MSM_QDSP6_APRV3
 	select MSM_QDSP6V2_CODECS
-	select SND_SOC_CPE
 	select SND_HWDEP
 	select DOLBY_DS2
 	help
@@ -322,7 +319,6 @@ config SND_SOC_MSM8994
 	select SND_SOC_MSM_HDMI_CODEC_RX
 	select QTI_PP
 	select DTS_SRS_TM
-	select SND_SOC_CPE
 	select MSM_ULTRASOUND
 	select DOLBY_DS2
 	select SND_HWDEP
