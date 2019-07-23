@@ -58,7 +58,8 @@ struct dolby_param_license {
 #define DTS_EAGLE_FLAG_IOCTL_MASK		(~(DTS_EAGLE_FLAG_IOCTL_PRE | \
 					     DTS_EAGLE_FLAG_IOCTL_JUSTSETCACHE))
 #define DTS_EAGLE_FLAG_ALSA_GET			(1<<31)
- struct dts_eagle_param_desc {
+
+struct dts_eagle_param_desc {
 	uint32_t id;
 	int32_t size;
 	int32_t offset;
