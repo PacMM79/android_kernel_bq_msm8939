@@ -395,8 +395,8 @@ int dwc3_send_gadget_generic_command(struct dwc3 *dwc, int cmd, u32 param)
 			dev_vdbg(dwc->dev, "Command Complete --> %d\n",
 					DWC3_DGCMD_STATUS(reg));
 			ret = 0;
-                        if (DWC3_DGCMD_STATUS(reg))
-                                return -EINVAL;
+			if (DWC3_DGCMD_STATUS(reg))
+				ret = -EINVAL;
 			break;
 		}
 
@@ -446,8 +446,8 @@ int dwc3_send_gadget_ep_cmd(struct dwc3 *dwc, unsigned ep,
 			 */
 			if (reg & 0x2000)
 				ret = -EAGAIN;
-                        else if (DWC3_DEPCMD_STATUS(reg))
-                                return -EINVAL;
+			else if (DWC3_DEPCMD_STATUS(reg))
+				ret = -EINVAL;
 			else
 				ret = 0;
 			break;
@@ -1097,7 +1097,7 @@ static void dwc3_prepare_trbs(struct dwc3_ep *dep, bool starting)
 					if (list_empty(&dep->request_list))
 						last_one = true;
 					chain = false;
-					if (last_req) {
+					if (list_empty(&dep->request_list)) {
 						last_one = true;
 						goto start_trb_queuing;
 					}

@@ -742,6 +742,7 @@ const char * const vmstat_text[] = {
 #endif
 	"nr_anon_transparent_hugepages",
 	"nr_free_cma",
+	"nr_swapcache",
 
 	/* enum writeback_stat_item counters */
 #ifdef CONFIG_UKSM

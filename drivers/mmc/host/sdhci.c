@@ -1439,9 +1439,9 @@ clock_set:
 			goto ret;
 		}
 		timeout--;
-                spin_unlock_irq(&host->lock);
+		spin_unlock_irq(&host->lock);
 		udelay(1);
-                spin_lock_irq(&host->lock);
+		spin_lock_irq(&host->lock);
 	}
 
 	clk |= SDHCI_CLOCK_CARD_EN;
@@ -1784,8 +1784,6 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
 			present = sdhci_readl(host, SDHCI_PRESENT_STATE) &
 					SDHCI_CARD_PRESENT;
 	}
-
-	present = mmc_gpio_get_cd(host->mmc);
 
 	spin_lock_irqsave(&host->lock, flags);
 

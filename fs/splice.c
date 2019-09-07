@@ -385,6 +385,9 @@ __generic_file_splice_read(struct file *in, loff_t *ppos,
 		index++;
 	}
 
+	if (unlikely(!(in->f_mode & FMODE_SPLICE_READ)))
+		return -EINVAL;
+
 	/*
 	 * Now loop over the map and see if we need to start IO on any
 	 * pages, fill in the partial map, etc.

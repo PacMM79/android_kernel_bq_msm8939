@@ -826,6 +826,7 @@ static struct kobject *get_device_parent(struct device *dev,
 		return &parent->kobj;
 	return NULL;
 }
+
 static inline bool live_in_glue_dir(struct kobject *kobj,
 				    struct device *dev)
 {
