@@ -1144,6 +1144,7 @@ static enum power_supply_property smb1360_battery_properties[] = {
 	POWER_SUPPLY_PROP_RESISTANCE,
 	POWER_SUPPLY_PROP_TEMP,
 	POWER_SUPPLY_PROP_SYSTEM_TEMP_LEVEL,
+	POWER_SUPPLY_PROP_TECHNOLOGY,
 };
 
 static int smb1360_get_prop_batt_present(struct smb1360_chip *chip)
@@ -2193,6 +2194,9 @@ static int smb1360_battery_get_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_SYSTEM_TEMP_LEVEL:
 		val->intval = chip->therm_lvl_sel;
+		break;
+	case POWER_SUPPLY_PROP_TECHNOLOGY:
+		val->intval = POWER_SUPPLY_TECHNOLOGY_LIPO;
 		break;
 	default:
 		return -EINVAL;
