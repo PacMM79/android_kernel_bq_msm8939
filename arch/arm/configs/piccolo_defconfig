@@ -1130,6 +1130,7 @@ CONFIG_CFG80211_INTERNAL_REGDB=y
 CONFIG_NFC=y
 # CONFIG_NFC_NCI is not set
 # CONFIG_NFC_HCI is not set
+CONFIG_MSM_BT_POWER=y
 
 #
 # Near Field Communication (NFC) devices
