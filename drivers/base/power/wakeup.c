@@ -457,26 +457,26 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 {
 	unsigned int cec;
 
-if (!enable_si_ws && !strcmp(ws->name, "sensor_ind"))
- return;
+    if (!enable_si_ws && !strcmp(ws->name, "sensor_ind"))
+    return;
 
- if (!enable_msm_hsic_ws && !strcmp(ws->name, "msm_hsic_host"))
- return;
+    if (!enable_msm_hsic_ws && !strcmp(ws->name, "msm_hsic_host"))
+    return;
 
- if (!enable_wlan_rx_wake_ws && !strcmp(ws->name, "wlan_rx_wake"))
- return;
+    if (!enable_wlan_rx_wake_ws && !strcmp(ws->name, "wlan_rx_wake"))
+    return;
 
- if (!enable_wlan_ctrl_wake_ws && !strcmp(ws->name, "wlan_ctrl_wake"))
- return;
+    if (!enable_wlan_ctrl_wake_ws && !strcmp(ws->name, "wlan_ctrl_wake"))
+    return;
 
- if (!enable_wlan_wake_ws && !strcmp(ws->name, "wlan_wake"))
- return;
+    if (!enable_wlan_wake_ws && !strcmp(ws->name, "wlan_wake"))
+    return;
 
- if (!enable_bluedroid_timer_ws && !strcmp(ws->name, "bluedroid_timer"))
- return;
+    if (!enable_bluedroid_timer_ws && !strcmp(ws->name, "bluedroid_timer"))
+    return;
 
- if (!enable_bluesleep_ws && !strcmp(ws->name, "bluesleep"))
- return;
+    if (!enable_bluesleep_ws && !strcmp(ws->name, "bluesleep"))
+    return;
 
 	/*
 	 * active wakeup source should bring the system
