@@ -75,7 +75,7 @@ struct thread_map *thread_map__new_by_uid(uid_t uid)
 
 	threads->nr = 0;
 
-	while (!readdir_r(proc, &dirent, &next) && next) {
+	while (!readdir(proc, &dirent, &next) && next) {
 		char *end;
 		bool grow = false;
 		struct stat st;

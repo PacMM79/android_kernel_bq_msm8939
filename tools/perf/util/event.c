@@ -135,7 +135,7 @@ static pid_t perf_event__synthesize_comm(struct perf_tool *tool,
 		return 0;
 	}
 
-	while (!readdir_r(tasks, &dirent, &next) && next) {
+	while (!readdir(tasks, &dirent, &next) && next) {
 		char *end;
 		pid = strtol(dirent.d_name, &end, 10);
 		if (*end)
@@ -387,7 +387,7 @@ int perf_event__synthesize_threads(struct perf_tool *tool,
 	if (proc == NULL)
 		goto out_free_mmap;
 
-	while (!readdir_r(proc, &dirent, &next) && next) {
+	while (!readdir(proc, &dirent, &next) && next) {
 		char *end;
 		pid_t pid = strtol(dirent.d_name, &end, 10);
 

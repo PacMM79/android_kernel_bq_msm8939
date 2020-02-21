@@ -119,7 +119,7 @@ static struct event_symbol event_symbols_sw[PERF_COUNT_SW_MAX] = {
 #define PERF_EVENT_ID(config)		__PERF_EVENT_FIELD(config, EVENT)
 
 #define for_each_subsystem(sys_dir, sys_dirent, sys_next)	       \
-	while (!readdir_r(sys_dir, &sys_dirent, &sys_next) && sys_next)	       \
+	while (!readdir(sys_dir, &sys_dirent, &sys_next) && sys_next)	       \
 	if (sys_dirent.d_type == DT_DIR &&				       \
 	   (strcmp(sys_dirent.d_name, ".")) &&				       \
 	   (strcmp(sys_dirent.d_name, "..")))
@@ -140,7 +140,7 @@ static int tp_event_has_id(struct dirent *sys_dir, struct dirent *evt_dir)
 }
 
 #define for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next)	       \
-	while (!readdir_r(evt_dir, &evt_dirent, &evt_next) && evt_next)        \
+	while (!readdir(evt_dir, &evt_dirent, &evt_next) && evt_next)        \
 	if (evt_dirent.d_type == DT_DIR &&				       \
 	   (strcmp(evt_dirent.d_name, ".")) &&				       \
 	   (strcmp(evt_dirent.d_name, "..")) &&				       \
@@ -954,7 +954,7 @@ void print_tracepoint_events(const char *subsys_glob, const char *event_glob,
 		return;
 
 	for_each_subsystem(sys_dir, sys_dirent, sys_next) {
-		if (subsys_glob != NULL && 
+		if (subsys_glob != NULL &&
 		    !strglobmatch(sys_dirent.d_name, subsys_glob))
 			continue;
 
@@ -965,7 +965,7 @@ void print_tracepoint_events(const char *subsys_glob, const char *event_glob,
 			continue;
 
 		for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next) {
-			if (event_glob != NULL && 
+			if (event_glob != NULL &&
 			    !strglobmatch(evt_dirent.d_name, event_glob))
 				continue;
 
@@ -1090,7 +1090,7 @@ static void print_symbol_events(const char *event_glob, unsigned type,
 
 	for (i = 0; i < max; i++, syms++) {
 
-		if (event_glob != NULL && 
+		if (event_glob != NULL &&
 		    !(strglobmatch(syms->symbol, event_glob) ||
 		      (syms->alias && strglobmatch(syms->alias, event_glob))))
 			continue;

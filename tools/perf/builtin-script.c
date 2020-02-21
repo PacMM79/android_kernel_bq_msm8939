@@ -813,7 +813,7 @@ static int is_directory(const char *base_path, const struct dirent *dent)
 }
 
 #define for_each_lang(scripts_path, scripts_dir, lang_dirent, lang_next)\
-	while (!readdir_r(scripts_dir, &lang_dirent, &lang_next) &&	\
+	while (!readdir(scripts_dir, &lang_dirent, &lang_next) &&	\
 	       lang_next)						\
 		if ((lang_dirent.d_type == DT_DIR ||			\
 		     (lang_dirent.d_type == DT_UNKNOWN &&		\
@@ -822,7 +822,7 @@ static int is_directory(const char *base_path, const struct dirent *dent)
 		    (strcmp(lang_dirent.d_name, "..")))
 
 #define for_each_script(lang_path, lang_dir, script_dirent, script_next)\
-	while (!readdir_r(lang_dir, &script_dirent, &script_next) &&	\
+	while (!readdir(lang_dir, &script_dirent, &script_next) &&	\
 	       script_next)						\
 		if (script_dirent.d_type != DT_DIR &&			\
 		    (script_dirent.d_type != DT_UNKNOWN ||		\
