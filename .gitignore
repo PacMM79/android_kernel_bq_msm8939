@@ -32,7 +32,6 @@ modules.builtin
 *.lzo
 *.patch
 *.gcno
-net/wireguard/
 
 #
 # Top-level generic files
