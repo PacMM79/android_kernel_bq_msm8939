@@ -1,6 +1,5 @@
 config SDFAT_FS
 	tristate "sdFAT filesystem support"
-	default y
 	select NLS
 	select NLS_UTF8
 	select NLS_CODEPAGE_437
@@ -118,5 +117,10 @@ config SDFAT_DBG_WARNON
 
 config SDFAT_STATISTICS
 	bool "enable statistics for bigdata"
+	depends on SDFAT_FS
+	default y
+
+config SDFAT_UEVENT
+	bool "enable uevent"
 	depends on SDFAT_FS
 	default y
