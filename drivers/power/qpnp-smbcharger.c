@@ -31,6 +31,10 @@
 #include <linux/printk.h>
 #include <linux/ratelimit.h>
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+#include <linux/fastchg.h>
+#endif
+
 /* Mask/Bit helpers */
 #define _SMB_MASK(BITS, POS) \
 	((unsigned char)(((1 << (BITS)) - 1) << (POS)))
@@ -778,7 +782,7 @@ int usb_current_table[] = {
 	2300,
 	2400,
 	2500,
-	3000
+	3000,
 };
 
 int dc_current_table[] = {
@@ -808,6 +812,17 @@ int dc_current_table[] = {
 	1950,
 	1970,
 	2000,
+        2050,
+        2100,
+        2300,
+        2400,
+};
+
+static const int fcc_comp_table[] = {
+	250,
+	1100,
+	1200,
+	1500,
 };
 
 static int calc_thermal_limited_current(struct smbchg_chip *chip,
@@ -1158,7 +1173,11 @@ static int smbchg_set_usb_current_max(struct smbchg_chip *chip,
 		chip->usb_max_current_ma = 500;
 		goto out;
 	}
+#ifdef CONFIG_FORCE_FAST_CHARGE
+	if ((force_fast_charge > 0 && current_ma == CURRENT_500_MA) || current_ma == CURRENT_900_MA) {
+#else
 	if (current_ma == CURRENT_900_MA) {
+#endif
 		rc = smbchg_sec_masked_write(chip,
 					chip->usb_chgpth_base + CHGPTH_CFG,
 					CFG_USB_2_3_SEL_BIT, CFG_USB_3);
